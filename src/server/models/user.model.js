@@ -1,13 +1,3 @@
-/**
- * Copyright (c) 2016, @Company Name. All rights reserved.
- */
-/**
- * UserModule
- *
- * @author      Afroza Yasmin
- * @version     1.0
- * @description :: This module exposes user schema
- */
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt-nodejs');
 var Schema = mongoose.Schema;

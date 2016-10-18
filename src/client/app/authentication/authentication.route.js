@@ -8,7 +8,7 @@
   }
   function getStates() {
     return [{
-      state: 'Authentication',
+      state: 'authentication',
       config: {
         url: '/',
         templateUrl: 'app/authentication/authentication.html',

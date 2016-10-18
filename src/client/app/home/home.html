@@ -1,0 +1,90 @@
+<div id="home-v1">
+    <div class="page-header">
+        <nav class="navbar navbar-default navbar-fixed-top">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">Chat Application</a>
+                </div>
+                <div id="navbar" class="collapse navbar-collapse">
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="active"><a href="" ng-click="vm.logout()">Logout</a></li>
+                    </ul>
+                </div>
+                <!--/.nav-collapse -->
+            </div>
+        </nav>
+    </div>
+    <section>
+        <div class="container-fluid">
+            <div class="row">
+                <!-- content goes here -->
+                <div class="col-md-2" ng-init="vm.userList()">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">User List</div>
+                        <div class="panel-body">
+							  <div class="list-group">
+							    <a ng-repeat="user in vm.users" ng-click="$parent.selected = user; vm.goChatWindow(selected._id)" class="list-group-item" ng-class="{active:selected==user}">{{user.fullname}}</a>
+							</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-10">
+                    <div class="">
+                        <div class="row form-group">
+                            <div class="">
+                                <div class="panel panel-primary">
+                                    <div class="panel-body body-panel" scroll-glue="glued">
+
+                                        <ul class="chat" ng-repeat="message in chatMessages track by $index">
+                                           
+                                            <li class="left clearfix">
+
+                                                <div class="chat-body clearfix">
+                                                    <div class="header">
+                                                        <strong ng-if="message.from._id == userid" class="primary-font" ng-class="{color1:message.from._id==userid, color2: message.from._id!=userid}">{{message.from.fullname}}</strong>
+                                                        
+                                                        <strong ng-if="message.from._id != userid" class="primary-font" ng-class="{color1:message.from._id==userid, color2: message.from._id!=userid}">{{message.to.fullname}}</strong>
+
+                                                        <small class="pull-right text-muted">
+                                                        <span class="glyphicon glyphicon-time"></span>{{message.createdDate | date}}</small>
+                                                    </div>
+                                                    <p>
+                                                        {{ message.messages }}
+                                                    </p>
+                                                </div>
+                                            </li>
+                                            <!-- <li class="left clearfix" >
+                                                <div class="chat-body clearfix">
+                                                    <div class="header">
+                                                        <strong class="primary-font" ng-class="{color1:message.from._id==userid, color2: message.from._id!=userid}">{{message.to.fullname}}</strong>
+                                                        <small class="pull-right text-muted">
+                                                        <span class="glyphicon glyphicon-time"></span>{{message.createdDate | date}}</small>
+                                                    </div>
+                                                    <p>
+                                                        {{ message.messages }}
+                                                    </p>
+                                                </div>
+                                            </li> -->
+                                        </ul>
+                                    </div>
+                                    <div class="panel-footer clearfix">
+                                        <textarea class="form-control" rows="3" ng-model="vm.messages"></textarea>
+                                        <span class="" style="margin-top: 10px; float: right;">
+                                        <button class="btn btn-warning" id="btn-chat" enter-key ng-click="vm.chat(selected._id, selected)">Send</button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

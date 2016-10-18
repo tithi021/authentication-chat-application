@@ -525,13 +525,13 @@ function startBrowserSync(isDev, specRunner) {
       config.temp + '**/**/*.css'
     ] : [],
     ghostMode: { // these are the defaults t,f,t,t
-      clicks: true,
+      clicks: false,
       location: false,
-      forms: true,
-      scroll: true
+      forms: false,
+      scroll: false
     },
-    injectChanges: true,
-    logFileChanges: true,
+    injectChanges: false,
+    logFileChanges: false,
     logLevel: 'info',
     logPrefix: 'hottowel',
     notify: true,

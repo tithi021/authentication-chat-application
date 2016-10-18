@@ -1,20 +1,23 @@
 var router = require('express')
   .Router();
 var four0four = require('./utils/404')();
-var User = require('./user.model');
+var User = require('./models/user.model');
+var Chat = require('./models/chat.model');
 var jwt = require('jwt-simple');
 var moment = require('moment');
-//var data = require('./data');
-// router.get('/people', getPeople);
-// router.get('/person/:id', getPerson);
-// router.get('/*', four0four.notFoundMiddleware);
+var _ = require('lodash');
+var token = require('./utils/token-verification');
+var socket = require('socket.io');
+var io = socket();
 // User registration
-router.post('/registration', registration);
-router.post('/login', login);
-router.get('/*', four0four.notFoundMiddleware);
-// module.exports = router;
+router.post('/registration', registration); // user registration
+router.post('/login', login); // user login
+router.get('/userVerify', token.isVerified, userVerify); // user profile verify
+router.get('/userList', token.isVerified, userList); // load all user list
+router.post('/sendChatMessage', token.isVerified, sendChatMessage); // user chat
+router.get('/loadChatMessages/:chatUserId', token.isVerified, loadChatMessages); // load chat messages
+
 function registration(req, res, next) {
-  console.log(req.body);
   var query = {
     'email': req.body.email,
     'username': req.body.username
@@ -24,8 +27,6 @@ function registration(req, res, next) {
   User.findOne(query, callback);
   // First Callback function
   function callback(error, found) {
-    console.log('found');
-    console.log(found);
     if (error) {
       res.status(400)
         .send({
@@ -33,7 +34,6 @@ function registration(req, res, next) {
         });
     }
     else {
-      console.log('else');
       // Get user data
       var newUser = new User({
         fullname: req.body.fullname,
@@ -41,7 +41,6 @@ function registration(req, res, next) {
         email: req.body.email,
         password: req.body.password
       });
-      console.log(newUser);
       // Attempt to save the user
       newUser.save(function(err, user, num) {
         console.log(err);
@@ -69,6 +68,7 @@ function registration(req, res, next) {
     }
   }
 }
+
 function login(req, res) {
   // Query by email/username to find User
   User.findOne({
@@ -129,19 +129,89 @@ function login(req, res) {
     }
   }
 }
-// //////////////
-// function getPeople(req, res, next) {
-//   res.status(200).send(data.people);
-// }
-// function getPerson(req, res, next) {
-//   var id = +req.params.id;
-//   var person = data.people.filter(function(p) {
-//     return p.id === id;
-//   })[0];
-//   if (person) {
-//     res.status(200).send(person);
-//   } else {
-//     four0four.send404(req, res, 'person ' + id + ' not found');
-//   }
-// }
+
+function userVerify(req, res) {
+  if (req.user) {
+    User.findOne({
+      '_id': req.user
+    }, function(error, user) {
+      if (error) {
+        res.status(401)
+          .send(error);
+      }
+      else {
+        if (user) {
+          res.status(200)
+            .send(user);
+        }
+      }
+    });
+  }
+}
+function userList(req, res) {
+  if (req.user) {
+    User.find({ '_id': { $ne: req.user } },function(error, user) {
+      if (error) {
+        res.status(401)
+          .send(error);
+      }
+      else {
+        res.status(200)
+          .send(user);
+      }
+    });
+  }
+}
+
+function sendChatMessage(req, res) {
+  if (req.user) {
+    var newChat = new Chat({
+      to: req.body.chatUser,
+      from: req.user,
+      messages: req.body.messages
+    });
+    // Attempt to save the user
+    newChat.save(function(err, chat, num) {
+      if (err) {
+        four0four.send404(req, res, 'not success!');
+      }
+      else {
+        var data = {
+          to: chat.to,
+          from: chat.from,
+          messages: chat.messages,
+          createdDate: chat.createdDate
+        };
+        
+        io.emit('message-from-server', {
+            message: data
+          });
+        return res.status(200)
+          .send(data);
+      }
+    });
+  }
+}
+function loadChatMessages(req, res) {
+  if(req.user) {
+    var chat = Chat.find({
+        $or: [
+          { 'from': req.user }, { 'to': req.user }, {'to': req.params.chatUserId}, {'from': req.params.chatUserId}
+        ]
+    });
+    
+    chat.populate('to', 'fullname');
+    chat.populate('from', 'fullname');
+
+    chat.exec(function(err, chatInfo) {
+      if(err) {
+        four0four.send404(req, res, err);
+      } else {
+        
+        res.status(200).send(chatInfo);
+      }
+    });
+  }
+}
+router.get('/*', four0four.notFoundMiddleware);
 module.exports = router;
